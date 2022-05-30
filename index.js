@@ -5,6 +5,7 @@ import MiniSearch from 'minisearch'
 
 const sourceDirectory = (process.env.DATAMAKER_SRC_DIR || 'data').replace(/\/+$/, '') + '/'
 const targetDirectory = (process.env.DATAMAKER_TARGET_DIR || 'out').replace(/\/+$/, '') + '/'
+fs.mkdirSync(targetDirectory)
 
 const getSubtitleForFile = async (path) => {
   const proc = await execa('ffmpeg', ['-i', path, '-map', '0:s:0', '-f', 'srt', '-'])
@@ -12,7 +13,7 @@ const getSubtitleForFile = async (path) => {
 }
 
 const saveStillImage = async (path, start, target) => {
-  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-frames:v', '1', '-q:v', '2', target])
+  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-filter:v', 'scale=360:-1', '-frames:v', '1', '-q:v', '2', target])
 };
 
 (async () => {
