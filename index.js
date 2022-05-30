@@ -54,7 +54,11 @@ const saveStillImage = async (path, start, target) => {
     listeners: {
       file: async (root, fileStats, next) => {
         if (fileStats.type !== 'file') return
-        await processFile(path.join(root, fileStats.name))
+        try {
+          await processFile(path.join(root, fileStats.name))
+        } catch (e) {
+          console.warn(e)
+        }
         next()
       },
     },
