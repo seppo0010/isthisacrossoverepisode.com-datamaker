@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/seppo0010/isthisacrossoverepisode.com-datamaker#readme",
   "dependencies": {
+    "episode-parser": "^2.0.2",
     "execa": "^6.1.0",
     "minisearch": "^4.0.3",
     "striptags": "^3.2.0",
