@@ -17,7 +17,7 @@ const getSubtitleForFile = async (path) => {
 }
 
 const saveStillImage = async (path, start, target) => {
-  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-filter:v', 'scale=360:-1', '-frames:v', '1', '-q:v', '2', target])
+  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-filter:v', 'scale=180:-1', '-frames:v', '1', '-q:v', '2', target])
 };
 
 (async () => {
