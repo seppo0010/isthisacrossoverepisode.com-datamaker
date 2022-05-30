@@ -1,9 +1,11 @@
 import { execa } from 'execa'
 import * as fs from 'fs'
 import { parseSync } from 'subtitle'
+import path from 'path'
 import MiniSearch from 'minisearch'
 import striptags from 'striptags'
 import episodeParser from 'episode-parser';
+import walk from 'walk'
 
 const sourceDirectory = (process.env.DATAMAKER_SRC_DIR || 'data').replace(/\/+$/, '') + '/'
 const targetDirectory = (process.env.DATAMAKER_TARGET_DIR || 'out').replace(/\/+$/, '') + '/'
@@ -19,13 +21,11 @@ const saveStillImage = async (path, start, target) => {
 };
 
 (async () => {
-  const files = fs.readdirSync(sourceDirectory)
-  files.forEach(async (file) => {
-    const path = sourceDirectory + file
-    const episode = episodeParser(file)
+  const processFile = async (filePath) => {
+    const episode = episodeParser(path.basename(filePath))
     const episodePath = `${targetDirectory}${episode.season}x${(episode.episode + '').padStart(2, '0')}/`
     fs.mkdirSync(episodePath, { recursive: true })
-    const subs = (await getSubtitleForFile(path)).filter((sub) => sub && sub.data && sub.data.start !== undefined)
+    const subs = (await getSubtitleForFile(filePath)).filter((sub) => sub && sub.data && sub.data.start !== undefined)
 
     // minisearch configuration must match web's
     const miniSearch = new MiniSearch({ fields: ['text'], storeFields: ['html', 'season', 'episode', 'stillPath'] })
@@ -42,8 +42,18 @@ const saveStillImage = async (path, start, target) => {
     for (const sub of subs) {
       const target = `${episodePath}${sub.data.start}.png`
       if (fs.existsSync(target)) continue
-      await saveStillImage(path, sub.data.start, target)
+      await saveStillImage(filePath, sub.data.start, target)
       process.stderr.write(`created still image for second ${sub.data.start}\n`)
     }
+  }
+  walk.walk(sourceDirectory, {
+    followLinks: true,
+    listeners: {
+      file: async (root, fileStats, next) => {
+        if (fileStats.type !== 'file') return
+        await processFile(path.join(root, fileStats.name))
+        next()
+      },
+    },
   })
 })()
