@@ -46,7 +46,7 @@ const saveStillImage = async (path, start, target) => {
       const target = `${episodePath}${sub.data.start}.png`
       if (fs.existsSync(target)) continue
       await saveStillImage(filePath, sub.data.start, target)
-      process.stderr.write(`created still image for second ${sub.data.start}\n`)
+      process.stderr.write(`created still image for ${episode.season}x${(episode.episode + '').padStart(2, '0')} on second ${sub.data.start}\n`)
     }
   }
   const walker = walk.walk(sourceDirectory, {
