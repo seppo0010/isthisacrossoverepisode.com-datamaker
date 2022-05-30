@@ -21,14 +21,18 @@ const saveStillImage = async (path, start, target) => {
 };
 
 (async () => {
+  const miniSearch = new MiniSearch({ fields: ['text'], storeFields: ['html', 'season', 'episode', 'stillPath'] })
   const processFile = async (filePath) => {
     const episode = episodeParser(path.basename(filePath))
+    if (!episode) {
+      process.stderr.write(`failed to parse episode for file at ${filePath}`)
+      return;
+    }
     const episodePath = `${targetDirectory}${episode.season}x${(episode.episode + '').padStart(2, '0')}/`
     fs.mkdirSync(episodePath, { recursive: true })
     const subs = (await getSubtitleForFile(filePath)).filter((sub) => sub && sub.data && sub.data.start !== undefined)
 
     // minisearch configuration must match web's
-    const miniSearch = new MiniSearch({ fields: ['text'], storeFields: ['html', 'season', 'episode', 'stillPath'] })
     miniSearch.addAll(subs.map((sub) => ({
       text: striptags(sub.data.text),
       html: sub.data.text,
@@ -37,7 +41,6 @@ const saveStillImage = async (path, start, target) => {
       stillPath: `${episodePath.substr(targetDirectory.length)}${sub.data.start}.png`,
       id: sub.data.start
     })))
-    fs.writeFileSync(targetDirectory + 'index.json', JSON.stringify(miniSearch))
 
     for (const sub of subs) {
       const target = `${episodePath}${sub.data.start}.png`
@@ -46,7 +49,7 @@ const saveStillImage = async (path, start, target) => {
       process.stderr.write(`created still image for second ${sub.data.start}\n`)
     }
   }
-  walk.walk(sourceDirectory, {
+  const walker = walk.walk(sourceDirectory, {
     followLinks: true,
     listeners: {
       file: async (root, fileStats, next) => {
@@ -55,5 +58,8 @@ const saveStillImage = async (path, start, target) => {
         next()
       },
     },
+  })
+  walker.on('end', () => {
+    fs.writeFileSync(targetDirectory + 'index.json', JSON.stringify(miniSearch))
   })
 })()
