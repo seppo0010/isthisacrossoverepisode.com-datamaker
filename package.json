@@ -1,0 +1,30 @@
+{
+  "name": "datamaker",
+  "version": "1.0.0",
+  "description": "Create index and still images from captioned videos",
+  "main": "index.js",
+  "scripts": {
+    "build": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/seppo0010/isthisacrossoverepisode.com-datamaker.git"
+  },
+  "keywords": [
+    "bojack",
+    "horseman"
+  ],
+  "author": "Sebastian Waisbrot",
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/seppo0010/isthisacrossoverepisode.com-datamaker/issues"
+  },
+  "homepage": "https://github.com/seppo0010/isthisacrossoverepisode.com-datamaker#readme",
+  "dependencies": {
+    "execa": "^6.1.0",
+    "minisearch": "^4.0.3",
+    "subtitle": "^4.1.2"
+  }
+}
