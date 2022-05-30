@@ -2,10 +2,11 @@ import { execa } from 'execa'
 import * as fs from 'fs'
 import { parseSync } from 'subtitle'
 import MiniSearch from 'minisearch'
+import striptags from 'striptags'
 
 const sourceDirectory = (process.env.DATAMAKER_SRC_DIR || 'data').replace(/\/+$/, '') + '/'
 const targetDirectory = (process.env.DATAMAKER_TARGET_DIR || 'out').replace(/\/+$/, '') + '/'
-fs.mkdirSync(targetDirectory)
+fs.mkdirSync(targetDirectory, { recursive: true })
 
 const getSubtitleForFile = async (path) => {
   const proc = await execa('ffmpeg', ['-i', path, '-map', '0:s:0', '-f', 'srt', '-'])
@@ -22,9 +23,10 @@ const saveStillImage = async (path, start, target) => {
     const path = sourceDirectory + file
     const subs = (await getSubtitleForFile(path)).filter((sub) => sub && sub.data && sub.data.start !== undefined)
 
-    const miniSearch = new MiniSearch({ fields: ['text'], storeFields: ['text'] })
+    const miniSearch = new MiniSearch({ fields: ['text'], storeFields: ['html'] })
     miniSearch.addAll(subs.map((sub) => ({
-      text: sub.data.text,
+      text: striptags(sub.data.text),
+      html: sub.data.text,
       id: sub.data.start
     })))
     fs.writeFileSync('out/index.json', JSON.stringify(miniSearch))
