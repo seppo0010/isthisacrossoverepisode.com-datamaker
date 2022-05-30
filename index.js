@@ -27,6 +27,7 @@ const saveStillImage = async (path, start, target) => {
     fs.mkdirSync(episodePath, { recursive: true })
     const subs = (await getSubtitleForFile(path)).filter((sub) => sub && sub.data && sub.data.start !== undefined)
 
+    // minisearch configuration must match web's
     const miniSearch = new MiniSearch({ fields: ['text'], storeFields: ['html', 'season', 'episode', 'stillPath'] })
     miniSearch.addAll(subs.map((sub) => ({
       text: striptags(sub.data.text),
