@@ -25,7 +25,7 @@ const saveStillImage = async (path, start, target) => {
   const processFile = async (filePath) => {
     const episode = episodeParser(path.basename(filePath))
     if (!episode) {
-      process.stderr.write(`failed to parse episode for file at ${filePath}`)
+      process.stderr.write(`failed to parse episode for file at ${filePath}\n`)
       return;
     }
     const episodePath = `${targetDirectory}${episode.season}x${(episode.episode + '').padStart(2, '0')}/`
