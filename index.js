@@ -9,6 +9,8 @@ import walk from 'walk'
 
 const sourceDirectory = (process.env.DATAMAKER_SRC_DIR || 'data').replace(/\/+$/, '') + '/'
 const targetDirectory = (process.env.DATAMAKER_TARGET_DIR || 'out').replace(/\/+$/, '') + '/'
+const stillWidth = 720
+const thumbnailWidth = 180
 fs.mkdirSync(targetDirectory, { recursive: true })
 
 const getSubtitleForFile = async (path) => {
@@ -16,12 +18,14 @@ const getSubtitleForFile = async (path) => {
   return parseSync(proc.stdout)
 }
 
-const saveStillImage = async (path, start, target) => {
-  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-filter:v', 'scale=180:-1', '-frames:v', '1', '-q:v', '2', target])
+const saveStillImage = async (path, start, target, width) => {
+  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-filter:v', `scale=${width}:-1`, '-frames:v', '1', '-q:v', '2', target])
 };
 
 (async () => {
-  const miniSearch = new MiniSearch({ fields: ['text'], storeFields: ['html', 'season', 'episode', 'stillPath'] })
+  const miniSearch = new MiniSearch({ fields: ['text'], storeFields: [
+    'html', 'season', 'episode',
+  ] })
   const processFile = async (filePath) => {
     const episode = episodeParser(path.basename(filePath))
     if (!episode) {
@@ -38,14 +42,18 @@ const saveStillImage = async (path, start, target) => {
       html: sub.data.text,
       season: episode.season,
       episode: episode.episode,
-      stillPath: `${episodePath.substr(targetDirectory.length)}${sub.data.start}.png`,
       id: sub.data.start
     })))
 
     for (const sub of subs) {
-      const target = `${episodePath}${sub.data.start}.png`
-      if (fs.existsSync(target)) continue
-      await saveStillImage(filePath, sub.data.start, target)
+      const target = `${episodePath}${sub.data.start}_still.png`
+      if (!fs.existsSync(target)) {
+        await saveStillImage(filePath, sub.data.start, target, stillWidth)
+      }
+      const thumbnail = `${episodePath}${sub.data.start}_thumbnail.png`
+      if (!fs.existsSync(thumbnail)) {
+        await saveStillImage(filePath, sub.data.start, thumbnail, thumbnailWidth)
+      }
       process.stderr.write(`created still image for ${episode.season}x${(episode.episode + '').padStart(2, '0')} on second ${sub.data.start}\n`)
     }
   }
