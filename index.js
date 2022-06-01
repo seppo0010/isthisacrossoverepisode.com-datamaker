@@ -14,6 +14,11 @@ const thumbnailWidth = 180
 fs.mkdirSync(targetDirectory, { recursive: true })
 
 const getSubtitleForFile = async (path) => {
+  const srtPath = path.substring(0, path.length - 3) + 'srt'
+  if (fs.existsSync(srtPath)) {
+    return parseSync(fs.readFileSync(srtPath, 'utf-8'))
+  }
+  process.stderr.write(`Extracting subtitles ${path}\n`)
   const proc = await execa('ffmpeg', ['-i', path, '-map', '0:s:0', '-f', 'srt', '-'])
   return parseSync(proc.stdout)
 }
@@ -27,6 +32,7 @@ const saveStillImage = async (path, start, target, width) => {
     'html', 'season', 'episode',
   ] })
   const processFile = async (filePath) => {
+    process.stderr.write(`Processing file ${filePath}\n`)
     const episode = episodeParser(path.basename(filePath))
     if (!episode) {
       process.stderr.write(`failed to parse episode for file at ${filePath}\n`)
@@ -36,6 +42,7 @@ const saveStillImage = async (path, start, target, width) => {
     fs.mkdirSync(episodePath, { recursive: true })
     const subs = (await getSubtitleForFile(filePath)).filter((sub) => sub && sub.data && sub.data.start !== undefined)
 
+    process.stderr.write('adding subtitles to index\n')
     // minisearch configuration must match web's
     miniSearch.addAll(subs.map((sub) => ({
       text: striptags(sub.data.text),
@@ -48,13 +55,15 @@ const saveStillImage = async (path, start, target, width) => {
     for (const sub of subs) {
       const target = `${episodePath}${sub.data.start}_still.png`
       if (!fs.existsSync(target)) {
+        process.stderr.write('creating still image\n')
         await saveStillImage(filePath, sub.data.start, target, stillWidth)
       }
       const thumbnail = `${episodePath}${sub.data.start}_thumbnail.png`
       if (!fs.existsSync(thumbnail)) {
+        process.stderr.write('creating thumbnail image\n')
         await saveStillImage(filePath, sub.data.start, thumbnail, thumbnailWidth)
       }
-      process.stderr.write(`created still image for ${episode.season}x${(episode.episode + '').padStart(2, '0')} on second ${sub.data.start}\n`)
+      process.stderr.write(`created images for ${episode.season}x${(episode.episode + '').padStart(2, '0')} on second ${sub.data.start}\n`)
     }
   }
   const walker = walk.walk(sourceDirectory, {
