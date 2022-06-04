@@ -33,7 +33,7 @@ const saveStillImage = async (path, start, target, width) => {
   ] })
   const processFile = async (filePath) => {
     process.stderr.write(`Processing file ${filePath}\n`)
-    const episode = episodeParser(path.basename(filePath))
+    const episode = episodeParser(path.basename(filePath).replace(/_/, ' '))
     if (!episode) {
       process.stderr.write(`failed to parse episode for file at ${filePath}\n`)
       return;
