@@ -28,6 +28,9 @@
     "episode-parser": "^2.0.2",
     "execa": "^6.1.0",
     "minisearch": "^4.0.3",
+    "node-fetch": "^3.2.5",
+    "opensubtitles-api": "^5.1.2",
+    "opensubtitles.com": "^1.0.0",
     "striptags": "^3.2.0",
     "subtitle": "^4.1.2",
     "walk": "^2.3.15"
