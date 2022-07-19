@@ -82,7 +82,7 @@ const getSubtitleFromOpenSubtitle = async (path, episode) => {
 }
 
 const getSubtitleForFile = async (path, episode) => {
-  return getSubtitleFromSrtFile(path) || getSubtitleFromTrack(path) || getSubtitleFromOpenSubtitle(path, episode);
+  return await getSubtitleFromSrtFile(path) || await getSubtitleFromTrack(path) || await getSubtitleFromOpenSubtitle(path, episode);
 }
 
 const saveStillImage = async (path, start, target, width) => {
