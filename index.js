@@ -13,6 +13,7 @@ import fetch from 'node-fetch';
 const sourceDirectory = (process.env.DATAMAKER_SRC_DIR || 'data').replace(/\/+$/, '') + '/'
 const targetDirectory = (process.env.DATAMAKER_TARGET_DIR || 'out').replace(/\/+$/, '') + '/'
 const imageExtension = process.env.IMAGE_EXTENSION || 'png'
+const imageQuality = process.env.IMAGE_QUALITY || imageExtension === 'webp' ? '75' : '2'
 const stillWidth = 720
 const thumbnailWidth = 180
 fs.mkdirSync(targetDirectory, { recursive: true })
@@ -86,7 +87,7 @@ const getSubtitleForFile = async (path, episode) => {
 }
 
 const saveStillImage = async (path, start, target, width) => {
-  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-filter:v', `scale=${width}:-1`, '-frames:v', '1', '-q:v', '2', target])
+  await execa('ffmpeg', ['-ss', Math.round(start / 1000), '-i', path, '-filter:v', `scale=${width}:-1`, '-frames:v', '1', '-q:v', imageQuality, target])
 };
 
 (async () => {
