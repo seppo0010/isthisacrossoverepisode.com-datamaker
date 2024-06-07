@@ -96,10 +96,16 @@ const saveStillImage = async (path, start, target, width) => {
   ] })
   const processFile = async (filePath) => {
     process.stderr.write(`Processing file ${filePath}\n`)
-    const episode = episodeParser(path.basename(filePath).replace(/_/, ' '))
+    const f = path.basename(filePath).replace(/_/, ' ')
+    let episode = episodeParser(f)
     if (!episode) {
-      process.stderr.write(`failed to parse episode for file at ${filePath}\n`)
-      return;
+      const parsed = f.match(/([0-9]+)x([0-9]+)/)
+      if (parsed) {
+        episode = { season: parsed[1], episode: parsed[2] }
+      } else {
+        process.stderr.write(`failed to parse episode for file at ${filePath}\n`)
+        return;
+      }
     }
     const episodePath = `${targetDirectory}${episode.season}x${(episode.episode + '').padStart(2, '0')}/`
     fs.mkdirSync(episodePath, { recursive: true })
